@@ -1,4 +1,6 @@
-const resolvers = {
+import { Resolvers } from "./generated/graphql"
+
+const resolvers: Resolvers = {
   Query: {
     hello: () => "world",
   },
