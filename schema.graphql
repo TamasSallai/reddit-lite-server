@@ -7,7 +7,16 @@ type Post {
   updatedAt: Date
 }
 
+type User {
+  id: String!
+  email: String!
+  username: String!
+  createdAt: Date
+  updatedAt: Date
+}
+
 type Query {
+  me: User
   getPosts: [Post!]!
   getPost(id: String!): Post
 }
@@ -16,4 +25,6 @@ type Mutation {
   createPost(title: String!): Post
   updatePost(id: String!, title: String): Post
   deletePost(id: String!): Boolean
+  register(email: String!, username: String!, password: String!): User
+  login(username: String!, password: String!): User
 }

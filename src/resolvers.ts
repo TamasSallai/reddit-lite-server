@@ -1,8 +1,16 @@
-import { Resolvers } from "./generated/graphql"
 import prisma from "./prisma"
+import bcrypt from "bcrypt"
+import { Resolvers } from "./generated/graphql"
 
 const resolvers: Resolvers = {
   Query: {
+    me: (_, __, { req }) => {
+      if (!req.session.userId) return null
+
+      return prisma.user.findUnique({
+        where: { id: req.session.userId },
+      })
+    },
     getPost: (_, { id }) => prisma.post.findUnique({ where: { id } }),
     getPosts: () => prisma.post.findMany(),
   },
@@ -29,6 +37,30 @@ const resolvers: Resolvers = {
       await prisma.post.delete({ where: { id } })
 
       return true
+    },
+    register: async (_, { email, username, password }) => {
+      const passwordHash = await bcrypt.hash(password, 10)
+
+      return prisma.user.create({
+        data: {
+          email,
+          username,
+          password: passwordHash,
+        },
+      })
+    },
+    login: async (_, { username, password }, { req }) => {
+      const user = await prisma.user.findUnique({ where: { username } })
+
+      if (!user) return null
+
+      const isValid = await bcrypt.compare(password, user.password)
+
+      if (!isValid) return null
+
+      req.session.userId = user.id
+
+      return user
     },
   },
 }
